@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+      - ./logs:/app/logs
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - LLM_MODEL=llama3.1:8b
+      - EMBEDDING_MODEL=BAAI/bge-small-en
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
